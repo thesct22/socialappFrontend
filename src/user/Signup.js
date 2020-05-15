@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import {signup} from "../auth"
+import {signup} from "../auth/Index"
 class Signup extends Component{
     
     constructor(){

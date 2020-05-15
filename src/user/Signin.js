@@ -1,6 +1,6 @@
 import React,{Component} from 'react';
 import {Redirect} from 'react-router-dom';
-import {signin, authenticate} from "../auth";
+import {signin, authenticate} from "../auth/Index";
 class Signin extends Component{
     
     constructor(){
@@ -18,8 +18,6 @@ class Signin extends Component{
         this.setState({error:""});
         this.setState({[name]:event.target.value});
     }
-    
-    
     
     clickSubmit=event=>{
         event.preventDefault();
