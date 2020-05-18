@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {isAuthenticated} from '../auth/Index';
 import {read,update} from './apiUser';
 import { Redirect } from 'react-router-dom';
+import DefaultProfile from '../images/avatar.jpg'
 
 class EditProfile extends Component{
     constructor(){
@@ -12,7 +13,9 @@ class EditProfile extends Component{
             password:"",
             email:"",
             redirectToProfile: false,
-            error:""
+            error:"",
+            fileSize:0,
+            loading: false
         }
     }
     
@@ -34,7 +37,11 @@ class EditProfile extends Component{
     };
     
     isValid=()=>{
-        const {name,email,password}=this.state;
+        const {name,email,password,fileSize}=this.state;
+        if(fileSize>100000){
+            this.setState({error:"File size should be less than 100 KB"});
+            return false;
+        }
         if(name.length<3){
             this.setState({error:"Name should be atleast 3 characters long"});
             return false;
@@ -51,33 +58,30 @@ class EditProfile extends Component{
     }
     
     componentDidMount(){
+        this.userData =new FormData();
         const userId=this.props.match.params.userId;
         this.init(userId);
-    }
+    };
     
     handleChange=(name)=>(event)=>{
         this.setState({error:""});
-        this.setState({[name]:event.target.value});
-    }
+        const value=name==="photo" ? event.target.files[0]: event.target.value;
+        const fileSize = name==="photo" ? event.target.files[0].size: 0;
+        this.userData.set(name,value);
+        this.setState({[name]:value, fileSize});
+    };
     
     clickSubmit=event=>{
         event.preventDefault();
+        this.setState({loading:true})
         if(this.isValid()){
-            const {name,email,password}=this.state;
-            const user={
-                name,
-                email,
-                password:password||undefined
-            };
-            //console.log(user);
             const userId=this.props.match.params.userId;
             const token=isAuthenticated().token;
-            update(userId,token,user)
+            update(userId,token,this.userData)
             .then(data=>{
                 if(data.error) this.setState({error:data.error});
                 else this.setState({
                 redirectToProfile:true,
-                
                 });
             });
         }
@@ -85,6 +89,14 @@ class EditProfile extends Component{
     
     signupForm=(name,email,password)=>(
         <form>
+            <div className="form-group">
+                <label className="text-muted">Profile Photo</label>
+                <input 
+                    onChange={this.handleChange("photo")} 
+                    type="file"
+                    accept="image/*" 
+                    className="form-control"/>
+            </div>
             <div className="form-group">
                 <label className="text-muted">Name</label>
                 <input 
@@ -116,16 +128,24 @@ class EditProfile extends Component{
     );
     
     render(){
-        const{id, name, email,password,redirectToProfile,error}=this.state;
-        
+        const{id, name, email,password,redirectToProfile,error,loading}=this.state;
+        console.log(error);
         if(redirectToProfile){
             return <Redirect to={`/user/${id}`}/>
         }
+        
+        const photoUrl=id?
+            `${process.env.REACT_APP_API_URL}/user/photo/${id}?${new Date().getTime()}`:
+            DefaultProfile;
         
         return(
             <div className="container">
                 <h2 className="mt-5 mb-5">Edit Profile</h2>
                 <div className="alert alert-danger" style={{display:error?"":"none"}}>{error}</div>
+                {loading ? (<div className="jumbotron text-center">
+                    <h2>Loading...</h2>    
+                </div>) : ("")}
+                <img src={photoUrl} alt={name}/>
                 
                 {this.signupForm(name, email,password)}
             </div>
