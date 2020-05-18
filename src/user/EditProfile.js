@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {isAuthenticated} from '../auth/Index';
-import {read,update} from './apiUser';
+import {read,update,updateUser} from './apiUser';
 import { Redirect } from 'react-router-dom';
 import DefaultProfile from '../images/avatar.jpg'
 
@@ -15,7 +15,8 @@ class EditProfile extends Component{
             redirectToProfile: false,
             error:"",
             fileSize:0,
-            loading: false
+            loading: false,
+            about:""
         }
     }
     
@@ -30,7 +31,9 @@ class EditProfile extends Component{
                 this.setState({
                     id:data._id,
                     name:data.name,
-                    email:data.email
+                    email:data.email,
+                    error:"",
+                    about:data.about
                 });
             }
         });
@@ -39,19 +42,19 @@ class EditProfile extends Component{
     isValid=()=>{
         const {name,email,password,fileSize}=this.state;
         if(fileSize>100000){
-            this.setState({error:"File size should be less than 100 KB"});
+            this.setState({error:"File size should be less than 100 KB",loading:false});
             return false;
         }
         if(name.length<3){
-            this.setState({error:"Name should be atleast 3 characters long"});
+            this.setState({error:"Name should be atleast 3 characters long",loading:false});
             return false;
         }
         if(!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)){
-            this.setState({error:"A valid email is required"});
+            this.setState({error:"A valid email is required",loading:false});
             return false;
         }
         if(password.length>=1&&password.length<=5){
-            this.setState({error:"Password must be at least 6 characters long"});
+            this.setState({error:"Password must be at least 6 characters long",loading:false});
             return false;
         }
         return true;
@@ -79,15 +82,21 @@ class EditProfile extends Component{
             const token=isAuthenticated().token;
             update(userId,token,this.userData)
             .then(data=>{
-                if(data.error) this.setState({error:data.error});
-                else this.setState({
-                redirectToProfile:true,
-                });
+                if(data.error){
+                    this.setState({error:data.error});
+                }
+                else{
+                    updateUser(data, ()=>{
+                        this.setState({
+                            redirectToProfile:true,
+                        });
+                    });    
+                } 
             });
         }
     };
     
-    signupForm=(name,email,password)=>(
+    signupForm=(name,email,password,about)=>(
         <form>
             <div className="form-group">
                 <label className="text-muted">Profile Photo</label>
@@ -104,6 +113,14 @@ class EditProfile extends Component{
                     type="text" 
                     className="form-control"
                     value={name}/>
+            </div>
+            <div className="form-group">
+                <label className="text-muted">About</label>
+                <input 
+                    onChange={this.handleChange("about")} 
+                    type="text" 
+                    className="form-control"
+                    value={about}/>
             </div>
             <div className="form-group">
                 <label className="text-muted">Email</label>
@@ -128,7 +145,7 @@ class EditProfile extends Component{
     );
     
     render(){
-        const{id, name, email,password,redirectToProfile,error,loading}=this.state;
+        const{id, name, email,password,redirectToProfile,error,loading,about}=this.state;
         console.log(error);
         if(redirectToProfile){
             return <Redirect to={`/user/${id}`}/>
@@ -145,9 +162,15 @@ class EditProfile extends Component{
                 {loading ? (<div className="jumbotron text-center">
                     <h2>Loading...</h2>    
                 </div>) : ("")}
-                <img src={photoUrl} alt={name}/>
+                <img 
+                    style={{height: "200px", width: "auto"}} 
+                    className="img-thumbnail" 
+                    src={photoUrl} 
+                    onError={i=>(i.target.src=`${DefaultProfile}`)}
+                    alt={name}
+                />
                 
-                {this.signupForm(name, email,password)}
+                {this.signupForm(name, email,password,about)}
             </div>
         )
     }
