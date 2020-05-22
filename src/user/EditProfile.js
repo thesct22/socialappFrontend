@@ -17,7 +17,7 @@ class EditProfile extends Component{
             fileSize:0,
             loading: false,
             about:""
-        }
+        };
     }
     
     init =(userId)=>{
@@ -39,32 +39,42 @@ class EditProfile extends Component{
         });
     };
     
-    isValid=()=>{
-        const {name,email,password,fileSize}=this.state;
-        if(fileSize>100000){
-            this.setState({error:"File size should be less than 100 KB",loading:false});
+    isValid = () => {
+        const { name, email, password, fileSize } = this.state;
+        if (fileSize > 1000000) {
+            this.setState({
+                error: "File size should be less than 100kb",
+                loading: false
+            });
             return false;
         }
-        if(name.length<3){
-            this.setState({error:"Name should be atleast 3 characters long",loading:false});
+        if (name.length<3) {
+            this.setState({ error: "Name is too small", loading: false });
             return false;
         }
-        if(!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)){
-            this.setState({error:"A valid email is required",loading:false});
+        // email@domain.com
+        if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+            this.setState({
+                error: "A valid Email is required",
+                loading: false
+            });
             return false;
         }
-        if(password.length>=1&&password.length<=5){
-            this.setState({error:"Password must be at least 6 characters long",loading:false});
+        if (password.length >= 1 && password.length <= 5) {
+            this.setState({
+                error: "Password must be at least 6 characters long",
+                loading: false
+            });
             return false;
         }
         return true;
-    }
+  };
     
-    componentDidMount(){
-        this.userData =new FormData();
-        const userId=this.props.match.params.userId;
+    componentDidMount() {
+        this.userData = new FormData();
+        const userId = this.props.match.params.userId;
         this.init(userId);
-    };
+    }
     
     handleChange=(name)=>(event)=>{
         this.setState({error:""});
@@ -74,74 +84,89 @@ class EditProfile extends Component{
         this.setState({[name]:value, fileSize});
     };
     
-    clickSubmit=event=>{
+    clickSubmit = event => {
         event.preventDefault();
-        this.setState({loading:true})
-        if(this.isValid()){
-            const userId=this.props.match.params.userId;
-            const token=isAuthenticated().token;
-            update(userId,token,this.userData)
-            .then(data=>{
-                if(data.error){
-                    this.setState({error:data.error});
-                }
-                else{
-                    updateUser(data, ()=>{
-                        this.setState({
-                            redirectToProfile:true,
-                        });
-                    });    
+        this.setState({ loading: true });
+
+        if (this.isValid()) {
+            const userId = this.props.match.params.userId;
+            const token = isAuthenticated().token;
+
+            update(userId, token, this.userData).then(data => {
+                if (data.error) {
+                    this.setState({ error: data.error });
                 } 
+                else if (isAuthenticated().user.role === "admin") {
+                    this.setState({
+                        redirectToProfile: true
+                    });
+                } 
+                else {
+                    updateUser(data, () => {
+                        this.setState({
+                            redirectToProfile: true
+                        });
+                    });
+                }
             });
         }
     };
     
-    signupForm=(name,email,password,about)=>(
+    signupForm = (name, email, password, about) => (
         <form>
             <div className="form-group">
                 <label className="text-muted">Profile Photo</label>
-                <input 
-                    onChange={this.handleChange("photo")} 
+                <input
+                    onChange={this.handleChange("photo")}
                     type="file"
-                    accept="image/*" 
-                    className="form-control"/>
+                    accept="image/*"
+                    className="form-control"
+                />
             </div>
+            
             <div className="form-group">
                 <label className="text-muted">Name</label>
-                <input 
-                    onChange={this.handleChange("name")} 
-                    type="text" 
+                <input
+                    onChange={this.handleChange("name")}
+                    type="text"
                     className="form-control"
-                    value={name}/>
+                    value={name}
+                />
             </div>
-            <div className="form-group">
-                <label className="text-muted">About</label>
-                <input 
-                    onChange={this.handleChange("about")} 
-                    type="text" 
-                    className="form-control"
-                    value={about}/>
-            </div>
+            
             <div className="form-group">
                 <label className="text-muted">Email</label>
-                <input 
-                    onChange={this.handleChange("email")} 
-                    type="email" 
+                <input
+                    onChange={this.handleChange("email")}
+                    type="email"
                     className="form-control"
-                    value={email}/>
+                    value={email}
+                />
             </div>
+
+            <div className="form-group">
+                <label className="text-muted">About</label>
+                <textarea
+                    onChange={this.handleChange("about")}
+                    type="text"
+                    className="form-control"
+                    value={about}
+                />
+            </div>
+
             <div className="form-group">
                 <label className="text-muted">Password</label>
-                <input 
-                    onChange={this.handleChange("password")} 
-                    type="password" 
+                <input
+                    onChange={this.handleChange("password")}
+                    type="password"
                     className="form-control"
-                    value={password}/>
+                    value={password}
+                />
             </div>
             <button onClick={this.clickSubmit} className="btn btn-raised btn-primary">
                 Update
             </button>
-        </form>
+            </form>
     );
     
     render(){
@@ -172,7 +197,7 @@ class EditProfile extends Component{
                 
                 {this.signupForm(name, email,password,about)}
             </div>
-        )
+        );
     }
 }
 
