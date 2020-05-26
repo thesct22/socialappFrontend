@@ -1,16 +1,16 @@
-export const read=(userId,token)=>{
-    return fetch(`${process.env.REACT_APP_API_URL}/user/${userId}`,{
-        method:"GET",
-        headers:{
-            Accept:"application/json",
-            "Content-Type":"application/json",
-            Authorization:`Bearer ${token}`
+export const read = (userId, token) => {
+    return fetch(`${process.env.REACT_APP_API_URL}/user/${userId}`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
         }
     })
-    .then(response=>{
-        return response.json();
-    })
-    .catch(err=> console.log(err));
+        .then(response => {
+            return response.json();
+        })
+        .catch(err => console.log(err));
 };
 
 export const update = (userId, token, user) => {
@@ -29,30 +29,30 @@ export const update = (userId, token, user) => {
         .catch(err => console.log(err));
 };
 
-export const remove=(userId,token)=>{
-    return fetch(`${process.env.REACT_APP_API_URL}/user/${userId}`,{
-        method:"DELETE",
-        headers:{
-            Accept:"application/json",
-            "Content-Type":"application/json",
-            Authorization:`Bearer ${token}`
+export const remove = (userId, token) => {
+    return fetch(`${process.env.REACT_APP_API_URL}/user/${userId}`, {
+        method: "DELETE",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
         }
     })
-    .then(response=>{
-        return response.json();
-    })
-    .catch(err=> console.log(err));
-}
+        .then(response => {
+            return response.json();
+        })
+        .catch(err => console.log(err));
+};
 
-export const list =()=>{
-    return fetch(`${process.env.REACT_APP_API_URL}/users`,{
-        method:"GET"
+export const list = () => {
+    return fetch(`${process.env.REACT_APP_API_URL}/users`, {
+        method: "GET"
     })
-    .then(response=>{
-        return response.json();
-    })
-    .catch(err=> console.log(err));
-}
+        .then(response => {
+            return response.json();
+        })
+        .catch(err => console.log(err));
+};
 
 export const updateUser = (user, next) => {
     if (typeof window !== "undefined") {
@@ -97,7 +97,7 @@ export const unfollow = (userId, token, unfollowId) => {
         .catch(err => console.log(err));
 };
 
-export const findPeople=(userId, token) => {
+export const findPeople = (userId, token) => {
     return fetch(`${process.env.REACT_APP_API_URL}/user/findpeople/${userId}`, {
         method: "GET",
         headers: {
