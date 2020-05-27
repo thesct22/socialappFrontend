@@ -1,44 +1,37 @@
-import React, { Component } from "react";
-import { isAuthenticated } from "../auth";
-import { create } from "./apiPost";
-import { Redirect } from "react-router-dom";
+import React,{Component} from 'react';
+import {singlePost,update} from './apiPost'
+import {isAuthenticated} from "../auth"
+import {Redirect} from "react-router-dom"
+import DefaultPost from "../images/mountains.jpg";
 
-class NewPost extends Component {
-    constructor() {
+class EditPost extends Component{
+    constructor(){
         super();
-        this.state = {
-            title: "",
-            body: "",
-            photo: "",
-            error: "",
-            user: {},
-            fileSize: 0,
-            loading: false,
-            redirectToProfile: false
-        };
-    }
-
-    componentDidMount() {
-        this.postData = new FormData();
-        this.setState({ user: isAuthenticated().user });
-    }
-
-    isValid = () => {
-        const { title, body, fileSize } = this.state;
-        if (fileSize > 100000) {
-            this.setState({
-                error: "File size should be less than 100kb",
-                loading: false
-            });
-            return false;
+        this.state={
+            id:'',
+            title:'',
+            body:'',
+            error:'',
+            redirectToProfile:false,
+            fileSize:0,
+            loading:false
         }
-        if (title.length === 0 || body.length === 0) {
-            this.setState({ error: "All fields are required", loading: false });
-            return false;
-        }
-        return true;
+    }
+    init = postId => {
+        singlePost(postId).then(data => {
+            if (data.error) {
+                this.setState({ redirectToProfile: true });
+            } else {
+                this.setState({
+                    id: data._id,
+                    title: data.title,
+                    body: data.body,
+                    error: ""
+                });
+            }
+        });
     };
-
+    
     handleChange = name => event => {
         this.setState({ error: "" });
         const value =
@@ -54,10 +47,10 @@ class NewPost extends Component {
         this.setState({ loading: true });
 
         if (this.isValid()) {
-            const userId = isAuthenticated().user._id;
+            const postId = this.state.id;
             const token = isAuthenticated().token;
 
-            create(userId, token, this.postData).then(data => {
+            update(postId, token, this.postData).then(data => {
                 if (data.error) this.setState({ error: data.error });
                 else {
                     this.setState({
@@ -71,7 +64,7 @@ class NewPost extends Component {
         }
     };
 
-    newPostForm = (title, body) => (
+    editPostForm = (title, body) => (
         <form>
             <div className="form-group">
                 <label className="text-muted">Post Photo</label>
@@ -106,29 +99,46 @@ class NewPost extends Component {
                 onClick={this.clickSubmit}
                 className="btn btn-raised btn-primary"
             >
-                Create Post
+                Update Post
             </button>
         </form>
     );
-
-    render() {
-        const {
-            title,
-            body,
-            photo,
-            user,
-            error,
-            loading,
-            redirectToProfile
-        } = this.state;
-
-        if (redirectToProfile) {
-            return <Redirect to={`/user/${user._id}`} />;
+    
+    isValid = () => {
+        const { title, body, fileSize } = this.state;
+        if (fileSize > 100000) {
+            this.setState({
+                error: "File size should be less than 100kb",
+                loading: false
+            });
+            return false;
         }
-
-        return (
+        if (title.length === 0 || body.length === 0) {
+            this.setState({ error: "All fields are required", loading: false });
+            return false;
+        }
+        return true;
+    };
+    
+    componentDidMount() {
+        this.postData = new FormData();
+        const postId = this.props.match.params.postId;
+        this.init(postId);
+    }
+    render(){
+        const {id,title,body,redirectToProfile,error,loading}=this.state;
+        if (redirectToProfile) {
+            return <Redirect to={`/post/${id}`} />;
+        }
+        const photoUrl = id
+            ? `${
+                  process.env.REACT_APP_API_URL
+              }/post/photo/${id}?${new Date().getTime()}`
+            : DefaultPost;
+        return(
             <div className="container">
-                <h2 className="mt-5 mb-5">Create a new post</h2>
+                <h2 className="mt-5 mb-5">{title}</h2>
+            
                 <div
                     className="alert alert-danger"
                     style={{ display: error ? "" : "none" }}
@@ -143,11 +153,19 @@ class NewPost extends Component {
                 ) : (
                     ""
                 )}
-
-                {this.newPostForm(title, body)}
+            
+                <img
+                    style={{ height: "200px", width: "auto" }}
+                    className="img-thumbnail"
+                    src={photoUrl}
+                    onError={i => (i.target.src = `${DefaultPost}`)}
+                    alt={title}
+                />
+                
+                {this.editPostForm(title,body)}
             </div>
-        );
+        )
     }
 }
 
-export default NewPost;
+export default EditPost;
