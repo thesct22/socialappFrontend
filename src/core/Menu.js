@@ -87,7 +87,7 @@ const Menu = ({ history }) => (
                             {`${isAuthenticated().user.name}`}
                         </Link>
                     </li>
-
+                    
                     <li className="nav-item">
                         <span
                             className="nav-link"
@@ -101,6 +101,17 @@ const Menu = ({ history }) => (
                         </span>
                     </li>
                 </>
+            )}
+            {isAuthenticated() && isAuthenticated().user.role == "admin" && (
+                <li className="nav-item">
+                    <Link
+                        to={`/admin`}
+                        style={isActive(history, `/admin`)}
+                        className="nav-link"
+                    >
+                        Admin
+                    </Link>
+                </li>
             )}
         </ul>
     </div>

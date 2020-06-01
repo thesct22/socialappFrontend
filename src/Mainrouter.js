@@ -14,6 +14,7 @@ import PrivateRoute from "./auth/PrivateRoute";
 import EditPost from "./post/EditPost";
 import ForgotPassword from "./user/ForgotPassword";
 import ResetPassword from "./user/ResetPassword";
+import Admin from './admin/Admin'
 
 const MainRouter = () => (
     <div>
@@ -21,6 +22,7 @@ const MainRouter = () => (
         <Switch>
             <Route exact path="/" component={Home} />
             <Route exact path="/forgot-password" component={ForgotPassword} />
+            <PrivateRoute exact path="/admin" component={Admin} />
             <PrivateRoute exact path="/post/create" component={NewPost} />
             <Route exact path="/post/:postId" component={SinglePost} />
             <PrivateRoute exact path="/post/edit/:postId" component={EditPost} />
