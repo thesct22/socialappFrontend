@@ -46,7 +46,6 @@ class Posts extends Component {
                     const posterName = post.postedBy
                         ? post.postedBy.name
                         : " Unknown";
-                    console.log(post.created);
                     return (
                         <div className="card col-md-4" key={i}>
                             <div className="card-body">
