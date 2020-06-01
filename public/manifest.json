@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "MernFB",
+  "name": "An app similar to FB",
   "icons": [
     {
       "src": "favicon.ico",
