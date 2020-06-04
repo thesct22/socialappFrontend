@@ -1,29 +1,30 @@
-import React,{Component} from 'react';
-import {singlePost,update} from './apiPost'
-import {isAuthenticated} from "../auth"
-import {Redirect} from "react-router-dom"
+
+import React, { Component } from "react";
+import { singlePost, update } from "./apiPost";
+import { isAuthenticated } from "../auth";
+import { Redirect } from "react-router-dom";
 import DefaultPost from "../images/mountains.jpg";
 
-class EditPost extends Component{
-    constructor(){
+class EditPost extends Component {
+    constructor() {
         super();
-        this.state={
-            id:'',
-            title:'',
-            body:'',
-            error:'',
-            redirectToProfile:false,
-            fileSize:0,
-            loading:false
-        }
+        this.state = {
+            id: "",
+            title: "",
+            body: "",
+            redirectToProfile: false,
+            error: "",
+            fileSize: 0,
+            loading: false
+        };
     }
+
     init = postId => {
         singlePost(postId).then(data => {
             if (data.error) {
                 this.setState({ redirectToProfile: true });
             } else {
                 this.setState({
-                    // id is not post.postedBy._id
                     id: data.postedBy._id,
                     title: data.title,
                     body: data.body,
@@ -32,7 +33,29 @@ class EditPost extends Component{
             }
         });
     };
-    
+
+    componentDidMount() {
+        this.postData = new FormData();
+        const postId = this.props.match.params.postId;
+        this.init(postId);
+    }
+
+    isValid = () => {
+        const { title, body, fileSize } = this.state;
+        if (fileSize > 1000000) {
+            this.setState({
+                error: "File size should be less than 100kb",
+                loading: false
+            });
+            return false;
+        }
+        if (title.length === 0 || body.length === 0) {
+            this.setState({ error: "All fields are required", loading: false });
+            return false;
+        }
+        return true;
+    };
+
     handleChange = name => event => {
         this.setState({ error: "" });
         const value =
@@ -48,7 +71,7 @@ class EditPost extends Component{
         this.setState({ loading: true });
 
         if (this.isValid()) {
-            const postId = this.state.id;
+            const postId = this.props.match.params.postId;
             const token = isAuthenticated().token;
 
             update(postId, token, this.postData).then(data => {
@@ -104,42 +127,25 @@ class EditPost extends Component{
             </button>
         </form>
     );
-    
-    isValid = () => {
-        const { title, body, fileSize } = this.state;
-        if (fileSize > 100000) {
-            this.setState({
-                error: "File size should be less than 100kb",
-                loading: false
-            });
-            return false;
-        }
-        if (title.length === 0 || body.length === 0) {
-            this.setState({ error: "All fields are required", loading: false });
-            return false;
-        }
-        return true;
-    };
-    
-    componentDidMount() {
-        this.postData = new FormData();
-        const postId = this.props.match.params.postId;
-        this.init(postId);
-    }
-    render(){
-        const {id,title,body,redirectToProfile,error,loading}=this.state;
+
+    render() {
+        const {
+            id,
+            title,
+            body,
+            redirectToProfile,
+            error,
+            loading
+        } = this.state;
+
         if (redirectToProfile) {
-            return <Redirect to={`/post/${id}`} />;
+            return <Redirect to={`/user/${isAuthenticated().user._id}`} />;
         }
-        const photoUrl = id
-            ? `${
-                  process.env.REACT_APP_API_URL
-              }/post/photo/${id}?${new Date().getTime()}`
-            : DefaultPost;
-        return(
+
+        return (
             <div className="container">
                 <h2 className="mt-5 mb-5">{title}</h2>
-            
+
                 <div
                     className="alert alert-danger"
                     style={{ display: error ? "" : "none" }}
@@ -154,20 +160,21 @@ class EditPost extends Component{
                 ) : (
                     ""
                 )}
-            
+
                 <img
                     style={{ height: "200px", width: "auto" }}
                     className="img-thumbnail"
-                    src={photoUrl}
+                    src={`${
+                        process.env.REACT_APP_API_URL
+                    }/post/photo/${id}?${new Date().getTime()}`}
                     onError={i => (i.target.src = `${DefaultPost}`)}
                     alt={title}
                 />
-                
-                {isAuthenticated().user.role === "admin" ||
-                    (isAuthenticated().user._id === id &&
-                        this.editPostForm(title, body))}
+
+                {(isAuthenticated().user.role === "admin"||isAuthenticated().user._id === id) &&
+                    this.editPostForm(title, body)}
             </div>
-        )
+        );
     }
 }
 
