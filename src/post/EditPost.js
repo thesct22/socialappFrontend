@@ -1,4 +1,3 @@
-
 import React, { Component } from "react";
 import { singlePost, update } from "./apiPost";
 import { isAuthenticated } from "../auth";
@@ -166,12 +165,12 @@ class EditPost extends Component {
                     className="img-thumbnail"
                     src={`${
                         process.env.REACT_APP_API_URL
-                    }/post/photo/${id}?${new Date().getTime()}`}
+                    }/post/photo/${this.props.match.params.postId}?${new Date().getTime()}`}
                     onError={i => (i.target.src = `${DefaultPost}`)}
                     alt={title}
                 />
 
-                {(isAuthenticated().user.role === "admin"||isAuthenticated().user._id === id) &&
+                {(isAuthenticated().user.role === "admin" ||isAuthenticated().user._id === id) &&
                     this.editPostForm(title, body)}
             </div>
         );
