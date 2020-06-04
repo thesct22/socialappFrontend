@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+  api:
+    build:
+      context: ../nodeapi
+      dockerfile: Dockerfile
+    image: backend:2.0
+    container_name: mybackend
+    command: /usr/src/app/node_modules/.bin/nodemon app.js
+    volumes:
+      - ../nodeapi/:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "8080:8080"
+    env_file: ../nodeapi/.env
+    environment:
+      - NODE_ENV=development
+    networks:
+      - app-network
+  default:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: frontend:2.0
+    stdin_open: true
+    tty: true
+    container_name: myfrontend
+    command: yarn start
+    volumes:
+      - ./:/usr/app
+      - /usr/app/node_modules
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+networks:
+    app-network:
+        driver: bridge
+
+volumes:
+    data-volume:
+    node_modules:
+    web-root:
+      driver: local
