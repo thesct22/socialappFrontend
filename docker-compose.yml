@@ -5,7 +5,8 @@ services:
     build:
       context: ../nodeapi
       dockerfile: Dockerfile
-    image: backend:2.0
+    image: backend:1.0
+    #image: thesct22/socialappbackend:1.0
     container_name: mybackend
     command: /usr/src/app/node_modules/.bin/nodemon app.js
     volumes:
@@ -23,6 +24,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: frontend:2.0
+    #image: thesct22/socialappbackend:1.0
     stdin_open: true
     tty: true
     container_name: myfrontend
